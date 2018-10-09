@@ -1,0 +1,11 @@
+*.tex
+*.pyc
+*.png
+*.jpg
+*.jpeg
+.DS_Store
+*.csv
+*.pickle
+*.ipynb
+*.p
+*.txt
