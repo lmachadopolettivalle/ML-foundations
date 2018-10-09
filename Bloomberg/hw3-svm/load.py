@@ -136,44 +136,49 @@ def run_6_9(train_data, val_data, l2reg):
 	scores = [dotProduct(w, make_bag(i)[1]) for i in val_data]
 	predictions = [1 if scores[i] >= 0 else -1 for i in xrange(len(scores))]
 	corrects = [make_bag(i)[0] for i in val_data]
-	margins = [(scores[i]*corrects[i], val_data[i]) for i in xrange(len(scores))]
+	margins = [c*s for (c,s) in zip(corrects, scores)]
 	
+	#sort scores and reorder corrects based on sorting of scores
+	mag_scores = [s if s >= 0 else -1*s for s in scores]
+	sorted_tuple = [(s, c, p) for s, c, p in sorted(zip(mag_scores, corrects, predictions), key=lambda pair: pair[0])]
 
-	sorted_scores = sorted(scores)
+
+	def chunks(l, n):
+		"""Yield successive n-sized chunks from l."""
+		for i in range(0, len(l), n):
+			#yield l[i:i + n]
+			yield np.arange(i, min(i+n, len(l)))
+
 	L = len(scores)
-	#TODO split into groups better (i.e. using percentiles)
-	percent_error = [0]*4
-	group_len = [0]*4
-	for i in xrange(L):
-		if scores[i] < sorted_scores[L//4]:
-			group_len[0] += 1
-			if predictions[i] != corrects[i]:
-				percent_error[0] += 1
-		elif scores[i] < sorted_scores[L//2]:
-			group_len[1] += 1
-			if predictions[i] != corrects[i]:
-				percent_error[1] += 1
-		elif scores[i] < sorted_scores[3*L//4]:
-			group_len[2] += 1
-			if predictions[i] != corrects[i]:
-				percent_error[2] += 1
+	n = 10
+
+	groups = chunks(margins, int(L / n))
+
+
+	print "Group#  GroupSize  PercentageError  Min |score| in Group  Max |score| in Group"
+	print "-"*70
+	counter = 0
+	for group in groups:
+		counter += 1
+		size = 0
+		error = 0
+		get_min_score = True
+		for i in group:
+			max_score = sorted_tuple[i][0]
+
+			if get_min_score:
+				min_score = sorted_tuple[i][0]
+				get_min_score = False
+			size += 1
+			if sorted_tuple[i][1] != sorted_tuple[i][2]:
+				error += 1
+
+		if size != 0:
+			error /= size
 		else:
-			group_len[3] += 1
-			if predictions[i] != corrects[i]:
-				percent_error[3] += 1
-	
-	# Print results
-	print "Group#  GroupSize  PercentageError  Minimum Score in Group"
-	print "-"*30
-	for i in xrange(4):
-		if group_len[i] != 0:
-			average_percent_error = percent_error[i] / group_len[i]
-		else:
-			average_percent_error = "NA"
+			error = "NA"
 
-		print i, group_len[i], average_percent_error, sorted_scores[i*L//4 - 1]
-
-
+		print counter, size, error, min_score, max_score
 
 
 def run_7_1(train_data, val_data, l2reg):
