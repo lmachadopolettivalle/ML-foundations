@@ -1,4 +1,5 @@
 *.tex
+*.pdf
 *.pyc
 *.png
 *.jpg
@@ -6,6 +7,5 @@
 .DS_Store
 *.csv
 *.pickle
-*.ipynb
 *.p
 *.txt
