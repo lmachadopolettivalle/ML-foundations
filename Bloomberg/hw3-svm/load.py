@@ -55,11 +55,11 @@ def shuffle_and_split_data(num=1500, rewrite=False):
 	neg_path is where you save negative review data.
 	'''
 	try:
-		review = pickle.load(open("Data.p", "rb"))
+		review = pickle.load(open("data/Data.p", "rb"))
 		if rewrite:
 			random.shuffle(review)
-			os.remove("Data.p")
-			pickle.dump(review, open("Data.p", "wb"))
+			os.remove("data/Data.p")
+			pickle.dump(review, open("data/Data.p", "wb"))
 	except:
 		pos_path = "data/pos"
 		neg_path = "data/neg"
@@ -70,7 +70,7 @@ def shuffle_and_split_data(num=1500, rewrite=False):
 		review = pos_review + neg_review
 		random.shuffle(review)
 
-		pickle.dump(review, open("Data.p", "wb"))
+		pickle.dump(review, open("data/Data.p", "wb"))
 	finally:
 		return review[:num], review[num:]
 
@@ -126,7 +126,7 @@ def run_6_8(train_data, val_data, l2reg_search, epochs=100, plot=True):
 	ax.set_xlabel("L2 Regularization Parameter")
 	ax.set_ylabel("Average Validation 0-1 Loss")
 	ax.set_title("L2 Regularization Hyperparameter Tuning")
-	plt.savefig("./Recent L2 Parameter Search.pdf")
+	plt.savefig("./figures/Recent L2 Parameter Search.pdf")
 	plt.show()
 
 def run_6_9(train_data, val_data, l2reg):
@@ -158,6 +158,10 @@ def run_6_9(train_data, val_data, l2reg):
 	print "Group#  GroupSize  PercentageError  Min |score| in Group  Max |score| in Group"
 	print "-"*70
 	counter = 0
+
+	percentage_error_array = []
+	min_score_array = []
+
 	for group in groups:
 		counter += 1
 		size = 0
@@ -179,6 +183,15 @@ def run_6_9(train_data, val_data, l2reg):
 			error = "NA"
 
 		print counter, size, error, min_score, max_score
+		percentage_error_array.append(error)
+		min_score_array.append(min_score)
+	
+	plt.plot(min_score_array, percentage_error_array)
+	plt.xlabel("Min. absolute score in each group", fontsize=14)
+	plt.ylabel("Percentage Error in the group", fontsize=14)
+	plt.title("Percentage error in each of {0} groups separated by absolute score", fontsize=13)
+	plt.savefig("./figures/Error vs Score.pdf")
+	plt.show()
 
 
 def run_7_1(train_data, val_data, l2reg):
@@ -214,10 +227,10 @@ def main():
 	#run_6_8(train_data, val_data, l2reg_search)
 	l2_opt = 0.05
 
-	#### 6.9 TODO
+	#### 6.9
 	# Determine whether the magnitude of the score
 	# correlates with the confidence of our prediction
-	run_6_9(train_data, val_data, l2_opt)
+	#run_6_9(train_data, val_data, l2_opt)
 
 	#### 7.1
 	# Study incorrect case and weights of features
